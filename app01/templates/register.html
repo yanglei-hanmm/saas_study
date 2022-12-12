@@ -33,7 +33,7 @@
 
         <li>
             <label>手机号:</label>
-            <input class="mobile_phone" type="text" name="mobile_phone" id="mobile_phone">
+            <input class="mobile_phone" type="text" name="mobile_phone"  id="mobile_phone">
             <span class="error_tip">提示信息</span>
         </li>
 
@@ -41,7 +41,7 @@
             <label>验证码:</label>
             <input type="text" name="verification_code" id="verification_code">
             <span class="error_tip">提示信息</span>
-            <input class="fetch_verification_code" type="button" name="fetch_code" value="获取验证码">
+            <input class="fetch_verification_code" type="button" name="fetch_code" onclick="setTime(this)" value="获取验证码">
         </li>
 
         <li>
@@ -54,26 +54,50 @@
 </body>
 <script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
 <script>
-        //发送验证码
-        $('.fetch_verification_code').click(function ()
-        {
+    $('#mobile_phone').focus(function () {
+        $('#mobile_phone').next().css('display','none')
+    })
 
-            //mobile_phone
-            mobile_phone = $('.mobile_phone').val()
+    //发送验证码
+    $('.fetch_verification_code').click(function ()
+    {
 
-            csrf = $('input[name="csrfmiddlewaretoken"]').val()
+        //mobile_phone
+        mobile_phone = $('.mobile_phone').val()
 
-            //ajax发送post请求到后端/app01/sms/
-            params = {'mobile_phone':mobile_phone,'csrfmiddlewaretoken':csrf}
+        csrf = $('input[name="csrfmiddlewaretoken"]').val()
 
-            $.post('/app01/sms/',params,function (data) {
-                if (data.res == 1) {
-                    alert('验证码已发送')
-                } else {
-                }
-            })
+        //ajax发送post请求到后端/app01/sms/
+        params = {'mobile_phone':mobile_phone,'csrfmiddlewaretoken':csrf}
 
-
+        $.post('/app01/sms/',params,function (data) {
+            if (data.res == 1) {
+                alert('验证码已发送')
+            } else if(data.res == 2){
+                $('#mobile_phone').next().text(data.message)
+                $('#mobile_phone').next().css('display','block')
+            }
         })
-        </script>
+
+
+    })
+
+    //发送验证码倒计时
+    var countDown=10;
+    function setTime(val) {
+        if (countDown == 0) {
+        val.removeAttribute("disabled");
+        val.value="获取验证码";
+        countDown = 10;
+        return;
+        } else {
+            val.setAttribute("disabled", true);
+            val.value="重新发送(" + countDown + ")";
+            countDown--;
+    }
+    setTimeout(function() {
+        setTime(val)
+        },1000)
+    }
+</script>
 </html>

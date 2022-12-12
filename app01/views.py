@@ -32,6 +32,10 @@ class IndexView(View):
 class SmsView(View):
     def post(self,request):
         mobile_phone = request.POST.get('mobile_phone')
+        # 验证手机号 /^1[3-9]\d{9}$/
+        if not re.match(r'^1[3-9]\d{9}$',mobile_phone):
+            return JsonResponse(({'res': 2,'message': '手机号格式不正确'}))
+
         # 生成验证码，并存放redis
         verification_code =''.join(str(i) for i in random.sample(range(0, 9), 6))
         conn = get_redis_connection('default')
@@ -67,8 +71,8 @@ class RegisterView(View):
         #^(?![0-9]+$)(?![a-zA-Z_]+$)[0-9A-Za-z_]{8,16}$ 密码长度为8-16位，需包含数字和字母(大小写均可)
         if not re.match(r'^(?![0-9]+$)(?![a-zA-Z_]+$)[0-9A-Za-z_]{8,16}$',password):
             return render(request,'register.html',{'errmsg':'密码长度为8-16位，需包含数字和字母(大小写均可)'})
-        # 验证手机号 /^1[3-9]\d{9}$/
 
+        # 验证手机号 /^1[3-9]\d{9}$/
         if not re.match(r'^1[3-9]\d{9}$',mobile_phone):
             return render(request, 'register.html', {'errmsg': '手机号格式不正确'})
 
