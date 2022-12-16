@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    	<link rel="stylesheet" type="text/css" href="{% static 'css/main.css'%}">
+    	<link rel="stylesheet" type="text/css" href="{% static 'css/reset.css'%}">
+    <title>用户登录</title>
+</head>
+<body>
+<div class="login_con">
+<h1>用户登录</h1>
+<div class="reg_form clearfix">
+<form method="post" action="">
+    {% csrf_token %}
+    <ul>
+        <li>
+            <label>用户名或手机号:</label>
+            <input type="text" name="username" id="username">
+            <span class="error_tip">提示信息</span>
+        </li>
+
+        <li>
+            <label>密码:</label>
+            <input type="text" name="password" id="password">
+            <span class="error_tip">提示信息</span>
+        </li>
+
+        <li>
+            <input  type="text" id="image_code" name="image_code">
+            <img src="{% url 'app01:image_code' %}" id="capture_image_code" title="点击换图">
+        </li>
+
+        <li>
+            <input class="login" type="submit" name="login" value="登录">
+        </li>
+    </ul>
+     {{ errmsg }}
+</form>
+</div>
+</div>
+</body>
+<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+<script>
+    $('#capture_image_code').click(function () {
+        var oldSrc = $(this).attr('src');
+        $(this).attr('src',oldSrc+"?");
+    })
+
+</script>
+</html>

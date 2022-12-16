@@ -1,6 +1,7 @@
 import random
 import re
 
+from django.contrib.auth import authenticate, login
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django_redis import get_redis_connection
@@ -93,7 +94,41 @@ class RegisterView(View):
         if verification_code != verification_code_redis.decode('utf-8'):
             return render(request, 'register.html', {'errmsg': '验证码错误'})
 
-        Userinfo.objects.create(username=username, password=password,mobile_phone=mobile_phone)
+        Userinfo.objects.create_user(username=username, password=password,mobile_phone=mobile_phone)
 
+        return redirect(reverse('app01:login'))
+
+class LoginView(View):
+    def get(self,request):
+        return render(request,'login.html')
+
+    def post(self,request):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        image_code = request.POST.get('image_code')
+        # 进行业务处理：登录处理
+        user = authenticate(request,username=username,password=password)
+        if user is not None:
+            session_image_code = request.session['image_code']
+            if session_image_code !=image_code:
+                return render(request,'login.html',{'errmsg':'验证码错误或已过期'})
+
+            # 记录用户的登录状态
+            login(request, user)
         return redirect(reverse('app01:index'))
 
+
+class ImageCodeView(View):
+    def get(self, request):
+        from utils import  image_code
+        from io import BytesIO
+
+        image_object, code = image_code.check_code()
+
+        request.session['image_code'] = code
+        request.session.set_expiry(60*15)
+
+        stream = BytesIO()
+        image_object.save(stream, 'png')
+
+        return HttpResponse(stream.getvalue())
